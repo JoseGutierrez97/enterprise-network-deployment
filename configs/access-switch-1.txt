@@ -1,0 +1,71 @@
+! ============================================
+! ACCESS SWITCH 1 CONFIGURATION
+! Floor 1 - Sales & Engineering
+! ============================================
+!
+hostname ACCESS-SW-01
+!
+vlan 10
+ name MGMT
+vlan 20
+ name SALES
+vlan 30
+ name ENGINEERING
+vlan 50
+ name VOIP
+vlan 99
+ name NATIVE
+!
+! --- Trunk Uplink ---
+interface GigabitEthernet0/1
+ description Trunk to CORE-SW-01
+ switchport trunk encapsulation dot1q
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 10,20,30,50
+ switchport mode trunk
+ spanning-tree portfast trunk
+ no shutdown
+!
+! --- Sales Access Ports (VLAN 20) ---
+interface range FastEthernet0/1 - 12
+ description Sales Workstations
+ switchport mode access
+ switchport access vlan 20
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security mac-address sticky
+ switchport port-security violation restrict
+ spanning-tree portfast
+ spanning-tree bpduguard enable
+ no shutdown
+!
+! --- Engineering Access Ports (VLAN 30) ---
+interface range FastEthernet0/13 - 22
+ description Engineering Workstations
+ switchport mode access
+ switchport access vlan 30
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security mac-address sticky
+ switchport port-security violation restrict
+ spanning-tree portfast
+ spanning-tree bpduguard enable
+ no shutdown
+!
+! --- VoIP Ports (VLAN 50) ---
+interface range FastEthernet0/23 - 24
+ description VoIP Phones
+ switchport mode access
+ switchport access vlan 50
+ switchport voice vlan 50
+ spanning-tree portfast
+ no shutdown
+!
+! --- Management ---
+interface Vlan10
+ ip address 192.168.10.3 255.255.255.192
+ no shutdown
+!
+ip default-gateway 192.168.10.1
+!
+end
