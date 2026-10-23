@@ -1,0 +1,97 @@
+! ============================================
+! CORE SWITCH CONFIGURATION
+! Cisco Catalyst 3650 - Layer 3
+! ============================================
+!
+hostname CORE-SW-01
+!
+enable secret 5 $1$xxxxxxxxxxxxxxxxxxxx
+!
+no ip domain-lookup
+ip domain-name company.local
+!
+! --- VLAN Database ---
+vlan 10
+ name MGMT
+vlan 20
+ name SALES
+vlan 30
+ name ENGINEERING
+vlan 40
+ name GUEST
+vlan 50
+ name VOIP
+vlan 99
+ name NATIVE
+!
+! --- SVI Interfaces (Inter-VLAN Routing) ---
+interface Vlan10
+ description Management Gateway
+ ip address 192.168.10.1 255.255.255.192
+ no shutdown
+!
+interface Vlan20
+ description Sales Gateway
+ ip address 192.168.20.1 255.255.255.0
+ ip helper-address 192.168.10.10
+ no shutdown
+!
+interface Vlan30
+ description Engineering Gateway
+ ip address 192.168.30.1 255.255.254.0
+ ip helper-address 192.168.10.10
+ no shutdown
+!
+interface Vlan40
+ description Guest Gateway
+ ip address 192.168.40.1 255.255.255.0
+ ip helper-address 192.168.10.10
+ no shutdown
+!
+interface Vlan50
+ description VoIP Gateway
+ ip address 192.168.50.1 255.255.255.0
+ ip helper-address 192.168.10.10
+ no shutdown
+!
+! --- Physical Interfaces ---
+interface GigabitEthernet1/0/1
+ description Uplink to Edge Router
+ no switchport
+ ip address 192.168.10.2 255.255.255.192
+ no shutdown
+!
+interface GigabitEthernet1/0/2
+ description Trunk to Access-SW-01
+ switchport trunk encapsulation dot1q
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 10,20,30,50
+ switchport mode trunk
+ spanning-tree portfast trunk
+ no shutdown
+!
+interface GigabitEthernet1/0/3
+ description Trunk to Access-SW-02
+ switchport trunk encapsulation dot1q
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 10,40,99
+ switchport mode trunk
+ spanning-tree portfast trunk
+ no shutdown
+!
+! --- Routing ---
+ip routing
+!
+ip route 0.0.0.0 0.0.0.0 192.168.10.2
+!
+! --- SSH Access Only ---
+line vty 0 15
+ transport input ssh
+ login local
+!
+! --- Basic Hardening ---
+service password-encryption
+spanning-tree mode rapid-pvst
+spanning-tree vlan 1-4094 priority 4096
+!
+end
