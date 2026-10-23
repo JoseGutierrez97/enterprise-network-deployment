@@ -1,0 +1,4 @@
+1.Restrict Mode: Logs violation, drops unauthorized frames, port stays up.
+2.Shutdown Mode: Port enters err-disabled state.
+    -Recovery: errdisable recovery cause psecure-violation
+    -Or manual: shutdown / no shutdown on interface
